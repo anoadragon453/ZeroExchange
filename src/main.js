@@ -14,8 +14,8 @@ var ZeroFrame = require("./libs/ZeroFrame.js");
 var Router = require("./libs/router.js");
 
 var Vue = require("vue/dist/vue.min.js");
-
 var VueZeroFrameRouter = require("./libs/vue-zeroframe-router.js");
+var searchDbQuery = require("./libs/search.js");
 
 var { sanitizeStringForUrl, sanitizeStringForUrl_SQL, html_substr, sanitizeHtmlForDb } = require("./util.js");
 
@@ -246,13 +246,36 @@ class ZeroApp extends ZeroFrame {
 	    	});
 	}
 	
-	getQuestions() {
+	getQuestions(pageNum = 0, limit = 0) {
+		var offset = pageNum * limit;
 		var query = `
 			SELECT * FROM questions
 				LEFT JOIN json USING (json_id)
 				WHERE site!='17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM' AND site!='1HhFcVz9sKDYes1oM6pUbqoVDnURr48mky'
 				ORDER BY date_added DESC
+				${limit != "" ? "LIMIT " + limit : ""}
+				${limit != "" ? "OFFSET " + offset : ""}
 			`;
+    	return this.cmdp("dbQuery", [query]);
+	}
+
+	getQuestionsSearch(searchInput, pageNum = 0, limit = 5) {
+		var query = searchDbQuery(this, searchInput, {
+			orderByScore: true,
+			id_col: "question_id",
+			select: "*",
+			searchSelects: [
+				{ col: "title", score: 5 },
+				{ col: "tags", score: 4 },
+				{ col: "body", score: 1 }
+			],
+			table: "questions",
+			where: "site!='17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM' AND site!='1HhFcVz9sKDYes1oM6pUbqoVDnURr48mky'",
+			join: "LEFT JOIN json USING (json_id)",
+			afterOrderBy: "date_added DESC",
+			page: pageNum,
+			limit: limit
+		});
     	return this.cmdp("dbQuery", [query]);
 	}
 
@@ -291,13 +314,29 @@ class ZeroApp extends ZeroFrame {
     	return this.cmdp("dbQuery", [query]);
     }
 	
-    getQuestionsTopic(currentTopicAddress) {
-    	var query = `
+    getQuestionsTopicSearch(currentTopicAddress, searchInput, pageNum = 0, limit = 5) {
+    	/*var query = `
 		SELECT * FROM questions
 		LEFT JOIN json USING (json_id)
 		WHERE site='${currentTopicAddress}'
 		ORDER BY date_added DESC
-		`;
+		`;*/
+		var query = searchDbQuery(this, searchInput, {
+			orderByScore: true,
+			id_col: "question_id",
+			select: "*",
+			searchSelects: [
+				{ col: "title", score: 5 },
+				{ col: "tags", score: 4 },
+				{ col: "body", score: 1 }
+			],
+			table: "questions",
+			where: "site='" + currentTopicAddress + "'",
+			join: "LEFT JOIN json USING (json_id)",
+			afterOrderBy: "date_added DESC",
+			page: pageNum,
+			limit: limit
+		});
     	return this.cmdp("dbQuery", [query]);
 	}
 
@@ -831,9 +870,11 @@ VueZeroFrameRouter.VueZeroFrameRouter_Init(Router, app, [
 	{ route: "top-available", component: TopAvailable },
 	//{ route: "recent", component: HomeRecent },
 	{ route: "mine", component: HomeMine },
+	{ route: "search/:page", component: HomeSearch },
 	{ route: "search", component: HomeSearch },
 	{ route: ":topicaddress/mine", component: TopicMine },
 	{ route: ":topicaddress/ask", component: TopicAsk },
+	{ route: ":topicaddress/search/:page", component: TopicSearch },
 	{ route: ":topicaddress/search", component: TopicSearch },
 	{ route: ":topicaddress/:authaddress/:questionid/answer", component: TopicQuestionAnswer },
 	{ route: ":topicaddress/:authaddress/:questionid", component: TopicQuestion },

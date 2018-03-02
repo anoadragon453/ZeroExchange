@@ -7,14 +7,27 @@
 		        	<div class="nav-wrapper">
 		        		<form>
 	    		        	<div class="input-field">
-	    		        		<input id="search" type="search" placeholder="Search" v-model="searchInput" required>
+	    		        		<input id="search" type="search" placeholder="Search" v-model="searchInput" v-on:input="getQuestions" required>
 	    		        		<label class="label-icon" for="search"><i class="material-icons">search</i></label>
-	    		        		<i class="material-icons" v-on:click="searchInput = ''">close</i>
+	    		        		<i class="material-icons" v-on:click="clearSearch()">close</i>
 	    			        </div>
 	    		      	</form>
 		        	</div>
 		        </nav>
-		        <component :is="question_list_item" v-for="question in getSearchResults" :merger-zites="mergerZites" :user-info="userInfo" :question="question" :show-name="true" :show-topic-name="true" v-on:update="getQuestions"></component>
+
+				<!--<ul class="pagination" v-if="questions.length != 0">
+					<li><a href="#!" v-on:click.prevent="previousPage"><i class="material-icons">chevron_left</i></a></li>
+					<li class="disabled"><a href="#!">{{ pageNum + 1 }}</a></li>
+					<li><a href="#!" v-on:click.prevent="nextPage"><i class="material-icons">chevron_right</i></a></li>
+				</ul>-->
+
+		        <component :is="question_list_item" v-for="question in questions" :merger-zites="mergerZites" :user-info="userInfo" :question="question" :show-name="true" :show-topic-name="true" v-on:update="getQuestions"></component>
+
+				<ul class="pagination" v-if="questions.length != 0">
+					<li><a href="#!" v-on:click.prevent="previousPage"><i class="material-icons">chevron_left</i></a></li>
+					<li class="disabled"><a href="#!">{{ pageNum + 1 }}</a></li>
+					<li><a href="#!" v-on:click.prevent="nextPage"><i class="material-icons">chevron_right</i></a></li>
+				</ul>
 	        </div>
 	        <div class="col s12 m5 l3">
 	        	<component :is="connected_topics" :merger-zites="mergerZites"></component>
@@ -42,8 +55,31 @@
 				topicName: "",
 				topicAddress: "",
 				searchInput: "",
+				pageNum: 0,
 				questions: [],
 				isSearchStrict: false // TODO
+			}
+		},
+		beforeMount: function() {
+			var self = this;
+
+			if (!Router.currentParams["page"])
+				this.page = 0;
+			else this.page = parseInt(Router.currentParams["page"]) - 1;
+
+			this.$parent.$on("update", function() {
+				self.getQuestions();
+			});
+
+			this.$parent.$on("setMergerZites", function(mergerZites) {
+				self.manageMerger(mergerZites);
+				self.getQuestions();
+			});
+
+			// If mergerZites is empty
+			if (this.mergerZites && Object.keys(this.mergerZites).length != 0 && this.mergerZites.constructor === Object) {
+				this.manageMerger(this.mergerZites);
+				this.getQuestions();
 			}
 		},
 		computed: {
@@ -130,32 +166,19 @@
 				return list;
 			}
 		},
-		beforeMount: function() {
-			var self = this;
-
-			this.$parent.$on("update", function() {
-				self.getQuestions();
-			});
-
-			this.$parent.$on("setMergerZites", function(mergerZites) {
-				self.manageMerger(mergerZites);
-				self.getQuestions();
-			});
-
-			// If mergerZites is empty
-			if (this.mergerZites && Object.keys(this.mergerZites).length != 0 && this.mergerZites.constructor === Object) {
-				this.manageMerger(this.mergerZites);
-				this.getQuestions();
-			}
-		},
 		methods: {
 			manageMerger: function(mergerZites) {
 			},
 			getQuestions: function() {
 				var self = this;
 
-				page.getQuestions()
+				page.getQuestionsSearch(this.searchInput, this.pageNum, 5)
 					.then((questions) => {
+						if (questions.length == 0 && self.pageNum != 0) {
+							self.pageNum--;
+							self.getQuestions();
+							return;
+						}
 						self.questions = questions;
 					});
 			},
@@ -164,6 +187,19 @@
 			},
 			getDate: function(date) {
 				return moment(date).fromNow();
+			},
+			previousPage: function() { // TODO: Scroll to top
+				this.pageNum -= 1;
+				if (this.pageNum <= 0) this.pageNum = 0;
+				this.getQuestions();
+			},
+			nextPage: function() {
+				this.pageNum += 1;
+				this.getQuestions();
+			},
+			clearSearch: function() {
+				this.searchInput = "";
+				this.getQuestions();
 			}
 		}
 	}

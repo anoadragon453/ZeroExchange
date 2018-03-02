@@ -7,14 +7,20 @@
 		        	<div class="nav-wrapper">
 		        		<form>
 	    		        	<div class="input-field">
-	    		        		<input id="search" type="search" placeholder="Search" v-model="searchInput" required>
+	    		        		<input id="search" type="search" placeholder="Search" v-model="searchInput" v-on:input="getQuestions" required>
 	    		        		<label class="label-icon" for="search"><i class="material-icons">search</i></label>
-	    		        		<i class="material-icons" v-on:click="searchInput = ''">close</i>
+	    		        		<i class="material-icons" v-on:click="clearSearch()">close</i>
 	    			        </div>
 	    		      	</form>
 		        	</div>
 		        </nav>
-		        <component :is="question_list_item" v-for="question in getSearchResults" :merger-zites="mergerZites" :user-info="userInfo" :question="question" :show-name="true" :current-topic-address="topicAddress" v-on:update="getQuestions"></component>
+		        <component :is="question_list_item" v-for="question in questions" :merger-zites="mergerZites" :user-info="userInfo" :question="question" :show-name="true" :current-topic-address="topicAddress" v-on:update="getQuestions"></component>
+
+				<ul class="pagination" v-if="questions.length != 0">
+					<li><a href="#!" v-on:click.prevent="previousPage"><i class="material-icons">chevron_left</i></a></li>
+					<li class="disabled"><a href="#!">{{ pageNum + 1 }}</a></li>
+					<li><a href="#!" v-on:click.prevent="nextPage"><i class="material-icons">chevron_right</i></a></li>
+				</ul>
 	        </div>
 	        <div class="col s12 m5 l3">
 	        	<component :is="connected_topics" :merger-zites="mergerZites"></component>
@@ -43,6 +49,7 @@
 				topicAddress: "",
 				searchInput: "",
 				questions: [],
+				pageNum: 0,
 				isSearchStrict: false // TODO
 			}
 		},
@@ -58,71 +65,6 @@
 					return [];
 				}
 				return Object.keys(this.mergerZites);
-			},
-			getSearchResults: function() {
-				var list = this.questions.slice();
-
-				if (this.searchInput === "" || !this.searchInput) return list;
-
-				var words = this.searchInput.trim().split(" ");
-				var self = this;
-
-				list = list.filter(function(question) {
-					question.order = 0;
-					var matches = 0;
-
-					for (var i = 0; i < words.length; i++) {
-						var word = words[i].trim().toLowerCase();
-
-						if ("solved".includes(word) && question.solution_id && question.solution_auth_address) {
-                            question.order += 4;
-                            matches++;
-                            continue;
-                        }
-
-						if (question.tags && question.tags !== "" && question.tags.toLowerCase().includes(word)) {
-							question.order += 4;
-							matches++;
-							continue;
-						}
-						if (question.title && question.title.toLowerCase().includes(word)) {
-							question.order += 3;
-							matches++;
-							continue;
-						}
-						if (question.cert_user_id && word[0] === "@" && word.length > 1) {
-							var wordId = word.substring(1, word.length);
-							if (question.cert_user_id.replace(/@.*\.bit/, '').toLowerCase().includes(wordId)) {
-								question.order += 2;
-								matches++;
-								continue;
-							}
-						}
-						if (question.cert_user_id && question.cert_user_id.toLowerCase().includes(word)) {
-							question.order += 2;
-							matches++;
-							continue;
-						}
-						if (question.body && question.body.toLowerCase().includes(word)) {
-							matches++;
-							continue;
-						}
-
-						if (self.isSearchStrict) {
-							return false;
-						}
-
-						question.order--;
-					}
-					if (!self.isSearchStrict && matches === 0) return false;
-					else return true;
-				});
-				if (list.length > 1) {
-					list.sort(function(a, b) {
-						return b.order - a.order;
-					});
-				}
-				return list;
 			}
 		},
 		beforeMount: function() {
@@ -161,8 +103,13 @@
 			getQuestions: function() {
 				var self = this;
 
-				page.getQuestionsTopic(this.topicAddress)
+				page.getQuestionsTopicSearch(this.topicAddress, this.searchInput, this.pageNum)
 					.then((questions) => {
+						if (questions.length == 0 && self.pageNum != 0) {
+							self.pageNum--;
+							self.getQuestions();
+							return;
+						}
 						self.questions = questions;
 					});
 			},
@@ -174,6 +121,19 @@
 			},
 			getDate: function(date) {
 				return moment(date).fromNow();
+			},
+			previousPage: function() { // TODO: Scroll to top
+				this.pageNum -= 1;
+				if (this.pageNum <= 0) this.pageNum = 0;
+				this.getQuestions();
+			},
+			nextPage: function() {
+				this.pageNum += 1;
+				this.getQuestions();
+			},
+			clearSearch: function() {
+				this.searchInput = "";
+				this.getQuestions();
 			}
 		}
 	}
