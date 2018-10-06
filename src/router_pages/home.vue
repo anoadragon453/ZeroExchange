@@ -37,7 +37,6 @@
 			var self = this;
 
 			this.$parent.$on("update", function() {
-				console.log("Test");
 				self.getQuestions();
 			});
 
@@ -46,7 +45,7 @@
 				self.getQuestions();
 			});
 
-			// If mergerZites is empty
+			// If mergerZites is not empty
 			if (this.mergerZites && Object.keys(this.mergerZites).length != 0 && this.mergerZites.constructor === Object) {
 				this.manageMerger(this.mergerZites);
 				this.getQuestions();
@@ -68,7 +67,12 @@
 		},
 		methods: {
 			manageMerger: function(mergerZites) {
-				// Merger zites were successfully added
+				//mergerZites = { "17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM": "ZeroExchange" };
+				if (Object.keys(mergerZites).length == 1 && mergerZites["17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM"]) {
+					Router.navigate('top-available');
+				} else if (Object.keys(mergerZites).length <= 0) {
+					Router.navigate('top-available');
+				}
 			},
 			goto: function(to) {
 				Router.navigate(to);
