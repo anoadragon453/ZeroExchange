@@ -7,10 +7,10 @@
 				<h5>Recent</h5>
 	        	<div class="divider"></div>
 
-				<component :is="question_list_item" v-for="question in recentQuestions" :key="question.question_id" :user-info="userInfo" :merger-zites="mergerZites" :question="question" :show-name="true" :current-topic-address="topicAddress" v-on:update="getRecent"></component>
+				<component :is="question_list_item" v-for="question in recentQuestions" :key="question.question_id + '-' + question.directory.replace('users/')" :user-info="userInfo" :merger-zites="mergerZites" :question="question" :show-name="true" :current-topic-address="topicAddress" v-on:update="getRecent"></component>
 	        </div>
 	        <div class="col s12 m5 l3">
-	        	<component :is="connected_topics" :merger-zites="mergerZites"></component>
+	        	<component ref="connectedTopics" :is="connected_topics" :merger-zites="mergerZites"></component>
 	        </div>
 	    </div>
 	</div>
@@ -50,6 +50,14 @@
 			}
 		},
 		beforeMount: function() {
+			console.log("Test");
+			//this.$forceUpdate();
+			if (this.$refs.connectedTopics) this.$refs.connectedTopics.$mount();
+			this.topicName = "";
+			this.topicAddress = Router.currentParams["topicaddress"];
+			this.recentQuestions = [];
+			//this.$forceUpdate();
+
 			var self = this;
 
 			this.$parent.$on("update", function() {
@@ -62,7 +70,7 @@
 				self.getRecent();
 			});
 
-			// If mergerZites is empty
+			// If mergerZites is not empty
 			if (this.mergerZites && Object.keys(this.mergerZites).length != 0 && this.mergerZites.constructor === Object) {
 				this.manageMerger(this.mergerZites);
 				this.getRecent();
@@ -85,6 +93,8 @@
 			},
 			getRecent: function() {
 				var self = this;
+
+				//self.recentQuestions = [];
 
 				page.getQuestionsTopicRecent(this.topicAddress)
 					.then((questions) => {
