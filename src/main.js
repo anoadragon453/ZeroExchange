@@ -80,11 +80,37 @@ var app = new Vue({
 					LEFT JOIN json AS questions_json ON questions_json.directory=('data/users/' || answers.question_auth_address)
 					LEFT JOIN questions ON answers.question_id=questions.question_id AND questions.json_id=questions_json.json_id
 					WHERE answers.question_auth_address="${that.userInfo.auth_address}"`;
+				var queryQuestionComments = `
+					SELECT 'comment_' || REPLACE(comments_json.directory, 'data/users/', '') || '_' || comments.comment_id AS event_uri,
+						'comment' AS type,
+						comments.date_added AS date_added,
+						'Your Question' AS title,
+						'@' || comments_json.cert_user_id || ': ' || comments.body AS body,
+						'?/' || questions_json.site || '/' || REPLACE(questions_json.directory, 'data/users/', '') || '/' || questions.question_id AS url
+					FROM comments
+					LEFT JOIN json AS comments_json USING (json_id)
+					LEFT JOIN json AS questions_json ON questions_json.directory=('data/users/' || comments.reference_auth_address)
+					LEFT JOIN questions ON comments.reference_id=questions.question_id AND questions.json_id=questions_json.json_id
+					WHERE comments.reference_auth_address="${that.userInfo.auth_address}" AND comments.reference_type='q'`;
+				var queryAnswerComments = `
+					SELECT 'comment_' || REPLACE(comments_json.directory, 'data/users/', '') || '_' || comments.comment_id AS event_uri,
+						'comment' AS type,
+						comments.date_added AS date_added,
+						'Your Answer' AS title,
+						'@' || comments_json.cert_user_id || ': ' || comments.body AS body,
+						'?/' || questions_json.site || '/' || REPLACE(questions_json.directory, 'data/users/', '') || '/' || questions.question_id AS url
+					FROM comments
+					LEFT JOIN json AS comments_json USING (json_id)
+					LEFT JOIN json AS answers_json ON answers_json.directory=('data/users/' || comments.reference_auth_address)
+					LEFT JOIN answers ON comments.reference_id=answers.answer_id AND answers.json_id=answers_json.json_id
+					LEFT JOIN json AS questions_json ON questions_json.directory=('data/users/' || answers.question_auth_address)
+					LEFT JOIN questions ON answers.question_id=questions.question_id AND questions.json_id=questions_json.json_id
+					WHERE comments.reference_auth_address="${that.userInfo.auth_address}" AND comments.reference_type='a'`;
 
-				page.cmdp("feedFollow", [{"Answers": [queryAnswers, ""]}])
+				page.cmdp("feedFollow", [{"Answers": [queryAnswers, ""], "QuestionComments": [queryQuestionComments, ""], "AnswerComments": [queryAnswerComments, ""]}])
 					.then((result) => console.log("FeedFollow: ", result));
 
-				page.cmdp("dbQuery", [queryAnswers]).then((results) => console.log(results));
+				page.cmdp("dbQuery", [queryAnswerComments]).then((results) => console.log(results));
 
                 //console.log("TESTING")
 
