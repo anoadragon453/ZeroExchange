@@ -5,6 +5,8 @@
 	        	<component :is="home_navbar" active="mine" :user-info="userInfo"></component>
 
                 <component :is="question_list_item" v-for="question in questions" :key="question.question_id" :user-info="userInfo" :merger-zites="mergerZites" :question="question" :show-name="true" :current-topic-address="topicAddress" :show-topic-name="true" v-on:update="getQuestions"></component>
+
+				<p v-if="questions.length <= 0">You have not asked any questions. Create a question by going to the desired topic and clicking the "Ask" tab.</p>
 	        </div>
 	        <div class="col s12 m5 l3">
 	        	<component :is="connected_topics" :merger-zites="mergerZites"></component>

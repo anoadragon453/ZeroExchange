@@ -57,18 +57,35 @@ var app = new Vue({
             that.$emit("setUserInfo", that.userInfo);
             if (f !== null && typeof f === "function") f();
 
-            // TODO: This Query isn't working!
-            page.cmd("dbQuery", ["SELECT key, value FROM keyvalue LEFT JOIN json USING (json_id) WHERE cert_user_id=\"" + this.siteInfo.cert_user_id + "\" AND directory=\"users/" + this.siteInfo.auth_address + "\""], (rows) => {
-                var keyvalue = {};
+            page.cmd("dbQuery", ["SELECT key, value FROM keyvalue LEFT JOIN json USING (json_id) WHERE cert_user_id=\"" + this.siteInfo.cert_user_id + "\" AND directory=\"data/users/" + this.siteInfo.auth_address + "\""], (rows) => {
+				var keyvalue = {};
+				console.log("Test");
 
                 for (var i = 0; i < rows.length; i++) {
                     var row = rows[i];
                     
                     keyvalue[row.key] = row.value;
                 }
-                if (!keyvalue.name || keyvalue.name === "") {
-                    return;
-                }
+				
+				// Automatically follow answers and comments to your questions
+				var queryAnswers = `
+					SELECT 'answer_' || REPLACE(answers_json.directory, 'data/users/', '') || '_' || answers.answer_id AS event_uri,
+						'article' AS type,
+						answers.date_added AS date_added,
+						answers_json.cert_user_id || ' Answered Your Question "' || questions.title || '"' AS title,
+						answers.body AS body,
+						'?/' || questions_json.site || '/' || REPLACE(questions_json.directory, 'data/users/', '') || '/' || questions.question_id AS url
+					FROM answers
+					LEFT JOIN json AS answers_json USING (json_id)
+					LEFT JOIN json AS questions_json ON questions_json.directory=('data/users/' || answers.question_auth_address)
+					LEFT JOIN questions ON answers.question_id=questions.question_id AND questions.json_id=questions_json.json_id
+					WHERE answers.question_auth_address="${that.userInfo.auth_address}"`;
+
+				page.cmdp("feedFollow", [{"Answers": [queryAnswers, ""]}])
+					.then((result) => console.log("FeedFollow: ", result));
+
+				page.cmdp("dbQuery", [queryAnswers]).then((results) => console.log(results));
+
                 //console.log("TESTING")
 
                 /*if (!keyvalue.languages || keyvalue.languages === "") { // TODO: Might not need this check (this was from ZeroMedium originally)
@@ -117,7 +134,8 @@ class ZeroApp extends ZeroFrame {
 					self.cmdp("mergerSiteList", [true])
 						.then((mergerZites) => {
 							console.log(mergerZites);
-							if (!mergerZites["17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM"]) {
+							// Download ZeroNet topic by default
+							if (!mergerZites["1J29rTU6VTtJQXkBPZzTZPjogdGNpfcBkr"]) {
 								/*self.cmdp("mergerSiteAdd", ["1HhFcVz9sKDYes1oM6pUbqoVDnURr48mky"])
 									.then(() => {
 										self.cmdp("mergerSiteList", [true])
@@ -125,7 +143,7 @@ class ZeroApp extends ZeroFrame {
 												app.mergerZites = mergerZites;
 											});
 									});*/
-								self.addMerger("17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM")
+								self.addMerger("1J29rTU6VTtJQXkBPZzTZPjogdGNpfcBkr")
 									.then((mergerZites) => {
 										app.$emit('setMergerZites', mergerZites);
 										return self.cmdp("wrapperNotification", ["info", "You may need to refresh to see the Sandbox topic."]); // TODO
@@ -167,9 +185,11 @@ class ZeroApp extends ZeroFrame {
 	onRequest(cmd, message) {
 		Router.listenForBack(cmd, message);
 		if (cmd === "setSiteInfo") {
-			this.siteInfo = message.params;
-			app.siteInfo = message.params;
-			app.getUserInfo();
+			if (message.params.address == "1PHBjZSAc6mHDMkySJNs3XeSXUL7eY7Q7W") {
+				this.siteInfo = message.params;
+				app.siteInfo = message.params;
+				app.getUserInfo();
+			}
 		}
 
 		if (message.params.event[0] === "file_done") {
@@ -178,7 +198,7 @@ class ZeroApp extends ZeroFrame {
 	}
 
 	selectUser() {
-		return this.cmdp("certSelect", { accepted_domains: ["zeroid.bit", "kaffie.bit", "cryptoid.bit", "peak.id"] });
+		return this.cmdp("certSelect", { accepted_domains: ["zeroid.bit", "kxoid.bit", "kaffie.bit", "cryptoid.bit", "peak.id"] });
     }
 
     signout() {
@@ -594,6 +614,14 @@ class ZeroApp extends ZeroFrame {
     				return self.cmdp("wrapperNotification", ["error", "Failed to sign user data."]);
     			}
     		});
+	}
+
+	upvoteAnswer(currentTopicAddress, answer_id, ref_auth_address, beforePublishCB) {
+		// TODO
+	}
+
+	downvoteAnswer(currentTopicAddress, answer_id, ref_auth_address, beforePublishCB) {
+		// TODO
 	}
 	
 	deleteAnswer(currentTopicAddress, answer_id, beforePublishCB) {

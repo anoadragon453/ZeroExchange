@@ -4,7 +4,7 @@
 	        <div class="col s12 m7 l9">
 	        	<component :is="home_navbar" active="top" :user-info="userInfo"></component>
 
-				<h5>Recent</h5>
+				<h5>Recent Questions</h5>
 	        	<div class="divider"></div>
 
 				<component :is="question_list_item" v-for="question in recentQuestions" :key="question.question_id" :user-info="userInfo" :merger-zites="mergerZites" :question="question" :show-name="true" :current-topic-address="topicAddress" :show-topic-name="true" v-on:update="getQuestions"></component>

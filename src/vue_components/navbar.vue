@@ -34,7 +34,7 @@
 		name: "navbar",
 		data: () => {
 			return {
-				ZiteName: "ZeroExchange",
+				ZiteName: "KxoQA",
 				navbarLinks: [
 					{ name: "About", route: "about" },
 				]

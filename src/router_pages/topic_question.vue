@@ -19,8 +19,8 @@
 	        			<div style="margin-left: 10px;">Published {{ getDate }} <span>by <a :href="'./?/' + topicAddress + '/' + getAuthAddress" v-on:click.prevent="goto(topicAddress + '/' + getAuthAddress)">{{ getName }}</a></span> <em v-if="userIsOwner"> | <a href="#">Edit</a> | <a href="#"> Delete</a></em></div>
 	        		</div>
         			<component :is="comment_area" :user-info="userInfo" :current-topic-address="topicAddress" :comments="comments" :reference-id="question.question_id" :reference-auth-address="getAuthAddress" reference-type="q" v-on:update="getComments()">
-						<a href="#" style="margin-right: 7px;"><i class="material-icons" style="font-size: 1.3rem;">thumb_up</i></a>
-						<a href="#" style="margin-right: 7px;"><i class="material-icons" style="font-size: 1.3rem;">thumb_down</i></a>
+						<!--<a href="#" style="margin-right: 7px;"><i class="material-icons" style="font-size: 1.3rem;">thumb_up</i></a>
+						<a href="#" style="margin-right: 7px;"><i class="material-icons" style="font-size: 1.3rem;">thumb_down</i></a>-->
 					</component>
 	        	</div>
 	        	<h5 v-if="question">Answers <small style="margin-left: 10px; font-size: 65%;"><a :href="'./?/' + topicAddress + '/' + getAuthAddress + '/' + question.question_id + '/answer'" v-on:click.prevent="goto(topicAddress + '/' + getAuthAddress + '/' + question.question_id + '/answer')">Post Answer</a></small></h5>
