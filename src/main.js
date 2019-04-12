@@ -108,9 +108,7 @@ var app = new Vue({
 				page.cmdp("feedFollow", [{"Answers": [queryAnswers, ""], "QuestionComments": [queryQuestionComments, ""], "AnswerComments": [queryAnswerComments, ""]}])
 					.then((result) => console.log("FeedFollow: ", result));
 
-				//page.cmdp("dbQuery", [queryAnswerComments]).then((results) => console.log(results));
-
-                //console.log("TESTING")
+				page.cmdp("dbQuery", [queryAnswerComments]).then((results) => console.log("Feed, AnswerComments: ", results));
 
                 /*if (!keyvalue.languages || keyvalue.languages === "") { // TODO: Might not need this check (this was from ZeroMedium originally)
                     that.language_modal_active = true;
@@ -310,8 +308,9 @@ class ZeroApp extends ZeroFrame {
 			select: "*",
 			searchSelects: [
 				{ col: "title", score: 5 },
+				{ col: "cert_user_id", score: 5, usingJson: true },
 				{ col: "tags", score: 4 },
-				{ col: "body", score: 1 }
+				{ col: "body", score: 1 },
 			],
 			table: "questions",
 			where: "site!='17PRT7jHB4TN1PMzgWbxDQYrUnWKX2bNcM' AND site!='1HhFcVz9sKDYes1oM6pUbqoVDnURr48mky'",
@@ -371,6 +370,7 @@ class ZeroApp extends ZeroFrame {
 			select: "*",
 			searchSelects: [
 				{ col: "title", score: 5 },
+				{ col: "cert_user_id", score: 5, usingJson: true },
 				{ col: "tags", score: 4 },
 				{ col: "body", score: 1 }
 			],

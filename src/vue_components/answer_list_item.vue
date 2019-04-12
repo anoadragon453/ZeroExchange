@@ -17,7 +17,7 @@
 
 				<div style="margin-left: 10px;">
 					Published {{ getDate }} 
-					<span v-if="showName">by <a :href="'./?/' + currentTopicAddress + '/' + getAuthAddress" v-on:click.prevent="goto(currentTopicAddress + '/' + getAuthAddress)">{{ getName }}</a></span>
+					<!--<span v-if="showName">by <a :href="'./?/' + currentTopicAddress + '/' + getAuthAddress" v-on:click.prevent="goto(currentTopicAddress + '/' + getAuthAddress)">{{ getName }}</a></span>-->
 					<em v-if="userIsOwner"> | 
 						<a href="#" v-on:click.prevent="showEdit()" v-if="!isEditing">Edit</a> 
 						<span v-else>
