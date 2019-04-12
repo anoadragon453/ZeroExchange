@@ -110,7 +110,7 @@ var app = new Vue({
 				page.cmdp("feedFollow", [{"Answers": [queryAnswers, ""], "QuestionComments": [queryQuestionComments, ""], "AnswerComments": [queryAnswerComments, ""]}])
 					.then((result) => console.log("FeedFollow: ", result));
 
-				page.cmdp("dbQuery", [queryAnswerComments]).then((results) => console.log(results));
+				//page.cmdp("dbQuery", [queryAnswerComments]).then((results) => console.log(results));
 
                 //console.log("TESTING")
 

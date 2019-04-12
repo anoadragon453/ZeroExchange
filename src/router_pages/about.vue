@@ -14,7 +14,8 @@
 				<li>Rebrand from ZeroExchange to KxoQA</li>
 				<li>Optimization - no need to reload page when clicking on topic from sidebar.</li>
 				<li>About page</li>
-				<li>Follow Questions in NewsFeed and see Answers to your questions in NewsFeed</li>
+				<li>Follow answers and comments to questions from ZeroHello NewsFeed</li>
+				<li>Follow comments to answers from ZeroHello NewsFeed</li>
 				<li>Now Supports KxoId</li>
 			</ul>
 		</p>
