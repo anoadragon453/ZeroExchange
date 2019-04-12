@@ -1,7 +1,5 @@
 version = "0.1"
 
-var anime = require("animejs");
-window.anime = anime;
 var Materialize = require("materialize-css/dist/js/materialize.min.js");
 
 var MarkdownIt = require("markdown-it");
