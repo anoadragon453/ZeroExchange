@@ -22,28 +22,29 @@
     "browserify": "^14.4.0",
     "browserify-shim": "^3.8.14",
     "gulp": "^4.0.0",
-    "gulp-autoprefixer": "^4.1.0",
+    "gulp-autoprefixer": "^6.0.0",
     "gulp-concat": "^2.6.1",
     "gulp-minify-css": "^1.2.4",
-    "gulp-sass": "^3.2.1",
-    "gulp-sourcemaps": "^2.6.4",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.1",
     "gulp-util": "^3.0.8",
+    "node-sass": "^4.11.0",
     "patch-package": "^4.0.0",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0",
-    "watchify": "^3.11.0"
+    "vueify": "^9.4.1",
+    "watchify": "^3.11.1"
   },
   "dependencies": {
     "animejs": "^2.2.0",
     "markdown-it": "^8.4.2",
     "materialize-css": "^1.0.0",
     "moment": "^2.22.2",
-    "node-sass": "^4.9.3",
     "sanitize-html": "^1.19.1",
-    "vue": "^2.5.17",
-    "vue-hot-reload-api": "^2.3.1",
-    "vueify": "^9.4.1"
+    "vue": "^2.6.10",
+    "vue-hot-reload-api": "^2.3.3",
+    "vue-template-compiler": "^2.6.10"
   },
   "browser": {
     "vue": "vue/dist/vue.common.js"
